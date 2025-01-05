@@ -56,44 +56,41 @@ def dance(cols, c):
     cols[nc] = cols[nc][:p] + [d] + cols[nc][p:]
 
 
-def dance_rounds_cycle(cols):
-
-    orig_calls = copy.deepcopy(cols)
-
-    biggest = 0
-    i = 0
-    while True:
-        if i % N == 0:
-            prev_calls = copy.deepcopy(cols)
-
-        dance(cols, i % N)
-        i += 1
-
-        #if i % 1000 == 0:
-        #print_cols(cols)
-
-        row = []
-        for c in range(N):
-            row.append(cols[c][0])
+def get_int(cols):
+    row = []
+    for c in range(N):
+        row.append(cols[c][0])
 
         rint = int(''.join(list(map(str, row))))
 
-        if rint > biggest:
-            biggest = rint
-            print(f"New biggest: {biggest}")
+    return rint
 
 
-        # Ugh to do this right I need a proper cycle finding
-        # algorithm. Seems like too much work for a problem
-        # where I already have the correct answer...
+def dance_rounds_cycle(cols):
 
-        if cols_equal(cols, orig_calls):
-            print(f"Found cycle after {i} dances")
+    saved_cols = copy.deepcopy(cols)
+
+    pow_lim = 1
+
+    biggest = get_int(cols)
+
+    c = 0
+    while True:
+
+        for i in range(N):
+            dance(cols, i % N)
+            biggest = max(biggest, get_int(cols))
+
+        c += 1
+
+        if cols_equal(cols, saved_cols):
+            print(f"Found cycle at {c} steps ({c * N} dances)")
             return biggest
 
-        if cols_equal(cols, prev_calls):
-            print(f"Found fixed point after {i} dances")
-            return biggest
+        if c >= pow_lim:
+            print(f"Increasing Brent cycle finding limit to {pow_lim} and saving state")
+            saved_cols = copy.deepcopy(cols)
+            pow_lim *= 2
 
 
 
